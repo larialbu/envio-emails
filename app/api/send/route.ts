@@ -13,13 +13,19 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const host = (process.env.SMTP_HOST || "smtp.ethereal.email").trim();
+    const port = Number(process.env.SMTP_PORT) || 587;
+    // Se a porta for 465, secure deve obrigatoriamente ser true. Caso contrário, segue a config ou false (para 587).
+    const secure = port === 465 ? true : process.env.SMTP_SECURE === "true";
+
     const transporter = nodemailer.createTransport({
-      host: (process.env.SMTP_HOST || "smtp.ethereal.email").trim(),
-      port: Number(process.env.SMTP_PORT) || 587,
-      secure: process.env.SMTP_SECURE === "true",
+      host,
+      port,
+      secure,
       auth: {
         user: (process.env.SMTP_USER || "").trim(),
-        pass: (process.env.SMTP_PASS || "").trim(),
+        // Remove as aspas caso o usuário tenha colocado na variável de ambiente
+        pass: (process.env.SMTP_PASS || "").trim().replace(/^"|"$/g, ""),
       },
     });
 
